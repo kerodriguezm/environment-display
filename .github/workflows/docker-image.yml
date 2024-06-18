@@ -33,5 +33,6 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           IMAGE_TAG=$AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com/develop:latest
-          docker build -t $IMAGE_TAG .
+          docker build -t develop .
+          docker tag develop:latest $IMAGE_TAG
           docker push $IMAGE_TAG
