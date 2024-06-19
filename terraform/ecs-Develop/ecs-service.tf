@@ -1,15 +1,14 @@
-# Obtener la información de las subnets existentes filtrando por CIDR IPv4
 data "aws_subnet" "public_a" {
   filter {
     name   = "cidr-block"
-    values = ["10.0.1.0/24"]  # Reemplaza con el CIDR block de tu subnet
+    values = ["10.0.1.0/24"] 
   }
 }
 
 data "aws_subnet" "public_b" {
   filter {
     name   = "cidr-block"
-    values = ["10.0.2.0/24"]  # Reemplaza con el CIDR block de tu subnet
+    values = ["10.0.2.0/24"] 
   }
 }
 data "aws_security_group" "ecs" {
