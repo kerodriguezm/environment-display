@@ -25,7 +25,7 @@ resource "aws_ecs_task_definition" "ecs" {
 
   container_definitions = jsonencode([{
     name  = "develop"
-    image = "556332166226.dkr.ecr.us-east-1.amazonaws.com/develop:latest"
+    image = var.image
     essential = true
     portMappings = [{
       containerPort = 80
