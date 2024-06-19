@@ -1,0 +1,81 @@
+name: CI/CD testing
+
+on:
+  push:
+    branches: [ "testing" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+      MY_ENV_VARIABLE: "Testing"
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      
+      - name: Replace variable in properties file
+        working-directory: src/main/resources
+        run: |
+          sed -i 's/env.name=var/env.name=${{ env.MY_ENV_VARIABLE }}/' application.properties
+          cat application.properties
+
+      - name: Configure AWS credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set default.region us-east-1
+
+      - name: Log in to Amazon ECR
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+        run: |
+          aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT.dkr.ecr.$AWS_REGION.amazonaws.com
+
+      - name: Retrieve last build number
+        id: get_build_number
+        run: echo "::set-output name=BUILD_NUMBER::${{ github.run_number }}"
+
+      - name: Build and Push Docker image
+        env:
+          BUILD_NUMBER: ${{ steps.get_build_number.outputs.BUILD_NUMBER }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          IMAGE_TAG=556332166226.dkr.ecr.$AWS_REGION.amazonaws.com/testing:$BUILD_NUMBER
+          docker build -t testing .
+          docker tag testing:latest $IMAGE_TAG
+          docker push $IMAGE_TAG
+        
+      - name: Update variables.tf
+        working-directory: terraform/ecs-Testing
+        run: |
+          BUILD_NUMBER=${{ steps.get_build_number.outputs.BUILD_NUMBER }}
+          sed -i "s|556332166226.dkr.ecr.us-east-1.amazonaws.com/testing:latest|556332166226.dkr.ecr.us-east-1.amazonaws.com/testing:${BUILD_NUMBER}|" variables.tf
+          cat variables.tf
+
+      - name: Create infra
+        working-directory: terraform/ecs-Testing
+        run: terraform init
+
+      - name: Plan Terraform deployment
+        working-directory: terraform/ecs-Testing
+        run: terraform plan -out=tfplan
+        
+      - name: Apply Terraform changes
+        working-directory: terraform/ecs-Testing
+        run: terraform apply -auto-approve tfplan
+      
+      - name: Clean up Terraform plan file
+        working-directory: terraform/ecs-Testing
+        run: rm -rf tfplan
