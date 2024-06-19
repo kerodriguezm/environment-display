@@ -1,0 +1,35 @@
+name: Get ECS Task IP
+
+on:
+  workflow_dispatch:
+    inputs:
+      task-arn:
+        description: 'ARN del task en ECS'
+        required: true
+
+jobs:
+  describe-task:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Describe ECS Task and extract public IP
+        id: describe-task
+        run: |
+          task_arn="${{ github.event.inputs.task-arn }}"
+          aws ecs describe-tasks --cluster Develop --tasks $task_arn \
+          | jq -r '.tasks[0].attachments[0].details[] | select(.name == "publicIPv4Address") | .value'
+
+        env:
+          AWS_REGION: us-east-1
+          
+      - name: Display Public IP
+        run: echo "La IP pública del task es ${{ steps.describe-task.outputs.value }}"
