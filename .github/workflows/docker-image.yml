@@ -58,18 +58,18 @@ jobs:
           sed -i "s|556332166226.dkr.ecr.us-east-1.amazonaws.com/develop:latest|556332166226.dkr.ecr.us-east-1.amazonaws.com/develop:${BUILD_NUMBER}|" variables.tf
           cat variables.tf
 
-      #- name: Create infra
-      #  working-directory: terraform/ecs-Develop
-      #  run: terraform init
+      - name: Create infra
+        working-directory: terraform/ecs-Develop
+        run: terraform init
 
-      #- name: Plan Terraform deployment
-      #  working-directory: terraform/ecs-Develop
-      #  run: terraform plan -out=tfplan
-
-      #- name: Apply Terraform changes
-      #  working-directory: terraform/ecs-Develop
-      #  run: terraform apply -auto-approve tfplan
-      #
-      #- name: Clean up Terraform plan file
-      #  working-directory: terraform/ecs-Develop
-      #  run: rm -rf tfplan
+      - name: Plan Terraform deployment
+        working-directory: terraform/ecs-Develop
+        run: terraform plan -out=tfplan
+        
+      - name: Apply Terraform changes
+        working-directory: terraform/ecs-Develop
+        run: terraform apply -auto-approve tfplan
+      
+      - name: Clean up Terraform plan file
+        working-directory: terraform/ecs-Develop
+        run: rm -rf tfplan
