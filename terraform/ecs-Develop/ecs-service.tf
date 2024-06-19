@@ -40,11 +40,11 @@ resource "aws_ecs_task_definition" "ecs" {
     }
   }])
 
-  execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn      = aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn = aws_iam_role.ecs_task_execution_role_dev.arn
+  task_role_arn      = aws_iam_role.ecs_task_execution_role_dev.arn
 }
 
-resource "aws_iam_role" "ecs_task_execution_role" {
+resource "aws_iam_role" "ecs_task_execution_role_dev" {
   name = "ecsTaskExecutionRole"
 
   assume_role_policy = jsonencode({
