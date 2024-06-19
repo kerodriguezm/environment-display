@@ -25,6 +25,7 @@ jobs:
         working-directory: src/main/resources
         run: |
           sed -i 's/env.name=var/env.name=${{ env.MY_ENV_VARIABLE }}/' application.properties
+          cat application.properties
 
       - name: Configure AWS credentials
         env:
