@@ -45,7 +45,7 @@ resource "aws_ecs_task_definition" "ecs" {
 }
 
 resource "aws_iam_role" "ecs_task_execution_role_dev" {
-  name = "ecsTaskExecutionRole"
+  name = "ecsTaskExecutionRoleDev"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
