@@ -1,4 +1,4 @@
-name: Get ECS Task Info
+name: Get ECS IP Develop
 
 on:
   workflow_dispatch:
@@ -6,6 +6,8 @@ on:
 jobs:
   describe-task:
     runs-on: ubuntu-latest
+    env:
+      CLUSTER_NAME: "Develop"
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -20,13 +22,11 @@ jobs:
       - name: Get latest ECS task ARN
         id: get-task-arn
         run: |
-          task_arn=$(aws ecs list-tasks --cluster Develop --service-name develop-service --query 'taskArns[0]' --output text)
+          task_arn=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name develop-service --query 'taskArns[0]' --output text)
           echo "::set-output name=task_arn::$task_arn"
 
       - name: Describe ECS Task and extract info
         id: describe-task
-        env:
-          CLUSTER_NAME: "Develop"
         run: |
           
           task_arn="${{ steps.get-task-arn.outputs.task_arn }}"
