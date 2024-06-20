@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CLUSTER_NAME: "testing"
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -22,6 +23,7 @@ jobs:
       - name: Get latest ECS task ARN
         id: get-task-arn
         run: |
+        
           task_arn=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name testing-service --query 'taskArns[0]' --output text)
           echo "::set-output name=task_arn::$task_arn"
 
@@ -60,3 +62,4 @@ jobs:
       - name: Display Task Info
         run: |
           echo "The public IP of the task is ${{ env.public_ip }}"
+
