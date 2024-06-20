@@ -1,0 +1,61 @@
+name: Get ECS IP Develop
+
+on:
+  workflow_dispatch:
+
+jobs:
+  describe-task:
+    runs-on: ubuntu-latest
+    env:
+      CLUSTER_NAME: "Develop"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Get latest ECS task ARN
+        id: get-task-arn
+        run: |
+          task_arn=$(aws ecs list-tasks --cluster $CLUSTER_NAME --service-name develop-service --query 'taskArns[0]' --output text)
+          echo "::set-output name=task_arn::$task_arn"
+
+      - name: Describe ECS Task and extract info
+        id: describe-task
+        run: |
+          
+          task_arn="${{ steps.get-task-arn.outputs.task_arn }}"
+          aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $task_arn
+
+          TASK_DESCRIPTION=$(aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $task_arn)
+          echo "Task Description: $TASK_DESCRIPTION"
+
+          NETWORK_INTERFACE_ID=$(echo $TASK_DESCRIPTION | jq -r '.tasks[0].attachments[0].details[] | select(.name=="networkInterfaceId") | .value')
+
+          # Debugging output
+          echo "Network Interface ID: $NETWORK_INTERFACE_ID"
+
+          if [ -z "$NETWORK_INTERFACE_ID" ] || [ "$NETWORK_INTERFACE_ID" == "null" ]; then
+            echo "Error: Failed to get network interface ID."
+            exit 1
+          fi
+          
+          PUBLIC_IP=$(aws ec2 describe-network-interfaces --network-interface-ids $NETWORK_INTERFACE_ID --query 'NetworkInterfaces[0].Association.PublicIp' --output text)
+
+          echo "Public IP Address: $PUBLIC_IP"
+
+          if [ -z "$PUBLIC_IP" ] || [ "$PUBLIC_IP" == "None" ]; then
+            echo "Error: Failed to get public IP address."
+            exit 1
+          fi
+
+          echo "Public IP Address: http://$PUBLIC_IP:8080/"
+
+      - name: Display Task Info
+        run: |
+            echo "The public IP of the task is ${{ env.public_ip }}"
