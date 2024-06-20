@@ -25,9 +25,12 @@ jobs:
 
       - name: Describe ECS Task and extract info
         id: describe-task
+        env:
+          CLUSTER_NAME: "Develop"
         run: |
+          
           task_arn="${{ steps.get-task-arn.outputs.task_arn }}"
-          aws ecs describe-tasks --cluster Develop --tasks $task_arn
+          aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $task_arn
 
           TASK_DESCRIPTION=$(aws ecs describe-tasks --cluster $CLUSTER_NAME --tasks $task_arn)
           echo "Task Description: $TASK_DESCRIPTION"
