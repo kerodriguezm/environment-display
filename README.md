@@ -1,7 +1,7 @@
 
 ---
 
-# environment-display
+# Environment-display
 
 This project demonstrates two environments: Develop and Testing.
 
