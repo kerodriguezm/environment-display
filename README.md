@@ -25,4 +25,10 @@ To view the available workflows, navigate to the **Actions** tab. Below are the 
    - **Trigger:** Executes automatically on changes to the Testing branch.
    - [Read more](docs/CI&CD_Testing.md)
 
+5. **Get ECS IP Develop**
+   - **Manual Execution:** This workflow get the public ip from Develop ECS.
+
+6. **Get ECS IP Testing**
+   - **Manual Execution:** This workflow get the public ip from Testing ECS .
+
 ---
